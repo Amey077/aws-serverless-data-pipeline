@@ -18,9 +18,125 @@
         "VersioningConfiguration": {
                 "Status": "Enabled"
             }
+        },
+        "NotificationConfiguration": {
+          "LambdaConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    { "Name": "suffix", "Value": ".zip" }
+                  ]
+                }
+              },
+              "Function": { "Fn::GetAtt": ["UncompressLambda", "Arn"] }
+            },
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    { "Name": "suffix", "Value": ".csv" }
+                  ]
+                }
+              },
+              "Function": { "Fn::GetAtt": ["TransformLambda", "Arn"] }
+            }
+          ]
+        },
+        "DependsOn": [
+            "UncompressPermission",
+            "TransformPermission"
+            ]
+        },
+        "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        ]
+      }
+    },
+
+    "RetrieveLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "retrieve-dataset",
+        "Runtime": "python3.9",
+        "Handler": "retrieve.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "lambda/retrieve.zip"
         }
+      }
+    },
+
+    "UncompressLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "uncompress-dataset",
+        "Runtime": "python3.9",
+        "Handler": "uncompress.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "lambda/uncompress.zip"
+        }
+      }
+    },
+
+    "TransformLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "transform-dataset",
+        "Runtime": "python3.9",
+        "Handler": "transform.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "lambda/transform.zip"
+        }
+      }
+    },
+
+    "UncompressPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "UncompressLambda" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "s3.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["DataBucket", "Arn"] }
+      }
+    },
+
+    "TransformPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "TransformLambda" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "s3.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["DataBucket", "Arn"] }
+      }
     }
-  },
+    },
     "Outputs": {
         "CodeBucketName": {
             "Value": { "Ref": "CodeBucket" },
