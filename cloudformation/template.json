@@ -12,7 +12,17 @@
                 "BucketName": "aws-serverless-data-pipeline-s3-bucket",
                 "VersioningConfiguration": {
                     "Status": "Enabled"
-                },
+                }
+            }
+        },
+        "S3BucketNotification": {
+            "Type": "AWS::S3::BucketNotification",
+            "DependsOn": [
+                "UncompressLambdaPermission",
+                "TransformLambdaPermission"
+            ],
+            "Properties": {
+                "Bucket": { "Ref": "S3Bucket" },
                 "NotificationConfiguration": {
                     "LambdaConfigurations": [
                         {
@@ -28,7 +38,7 @@
                             }
                         },
                         "Function": {
-                            "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
+                            "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
                         }
                         },
                         {
@@ -44,7 +54,7 @@
                             }
                         },
                         "Function": {
-                            "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
+                            "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
                         }
                         }
                     ]
