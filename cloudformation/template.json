@@ -9,43 +9,46 @@
                 "TransformLambdaPermission"
             ],
             "Properties": {
-                "BucketName": "aws-serverless-data-pipeline-s3-bucket"
-            },
-            "NotificationConfiguration": {
-            "LambdaConfigurations": [
-                {
-                "Event": "s3:ObjectCreated:*",
-                "Filter": {
-                    "S3Key": {
-                    "Rules": [
+                "BucketName": "aws-serverless-data-pipeline-s3-bucket",
+                "VersioningConfiguration": {
+                    "Status": "Enabled"
+                },
+                "NotificationConfiguration": {
+                    "LambdaConfigurations": [
                         {
-                        "Name": "suffix",
-                        "Value": ".zip"
+                        "Event": "s3:ObjectCreated:*",
+                        "Filter": {
+                            "S3Key": {
+                            "Rules": [
+                                {
+                                "Name": "suffix",
+                                "Value": ".zip"
+                                }
+                            ]
+                            }
+                        },
+                        "Function": {
+                            "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
+                        }
+                        },
+                        {
+                        "Event": "s3:ObjectCreated:*",
+                        "Filter": {
+                            "S3Key": {
+                            "Rules": [
+                                {
+                                "Name": "suffix",
+                                "Value": ".csv"
+                                }
+                            ]
+                            }
+                        },
+                        "Function": {
+                            "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
+                        }
                         }
                     ]
-                    }
-                },
-                "Function": {
-                    "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
                 }
-                },
-                {
-                "Event": "s3:ObjectCreated:*",
-                "Filter": {
-                    "S3Key": {
-                    "Rules": [
-                        {
-                        "Name": "suffix",
-                        "Value": ".csv"
-                        }
-                    ]
-                    }
-                },
-                "Function": {
-                    "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
-                }
-                }
-            ]
             }
         },
         "LambdaExecutionRole": {
