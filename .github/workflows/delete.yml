@@ -22,7 +22,7 @@ jobs:
 
       - name: Empty Buckets
         run: |
-          aws s3 rm s3://lambda-code-s3-bucket --recursive || true
+          aws s3 rm s3://lambda-data-pipeline-code-s3-bucket --recursive || true
           aws s3 rm s3://aws-serverless-data-pipeline-s3-bucket --recursive || true
 
       - name: Delete Stack

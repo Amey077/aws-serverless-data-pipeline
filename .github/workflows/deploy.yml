@@ -41,11 +41,11 @@ jobs:
             --stack-name data-pipeline-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --region us-east-1
-            
+
       - name: Upload Lambda Zips to S3
         run: |
-          aws s3 cp retrieve.zip s3://lambda-code-s3-bucket/lambda/retrieve.zip
-          aws s3 cp uncompress.zip s3://lambda-code-s3-bucket/lambda/uncompress.zip
-          aws s3 cp transform.zip s3://lambda-code-s3-bucket/lambda/transform.zip
+          aws s3 cp retrieve.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/retrieve.zip
+          aws s3 cp uncompress.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/uncompress.zip
+          aws s3 cp transform.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/transform.zip
 
       

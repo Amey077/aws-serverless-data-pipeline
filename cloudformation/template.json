@@ -5,7 +5,7 @@
     "CodeBucket": {
         "Type": "AWS::S3::Bucket",
         "Properties": {
-            "BucketName": "lambda-code-s3-bucket",
+            "BucketName": "lambda-data-pipeline-code-s3-bucket",
             "VersioningConfiguration": {
                 "Status": "Enabled"
             }
