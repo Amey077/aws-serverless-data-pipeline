@@ -22,21 +22,24 @@ jobs:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
+      # 1️⃣ Create infrastructure first
+      - name: Deploy CloudFormation
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/template.json \
+            --stack-name data-pipeline-stack \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      # 2️⃣ Package lambda code
       - name: Zip Lambda Code
         run: |
           zip -r retrieve.zip lambda/retrieve
           zip -r uncompress.zip lambda/uncompress
           zip -r transform.zip lambda/transform
 
+      # 3️⃣ Upload lambda packages
       - name: Upload Lambda Packages
         run: |
           aws s3 cp retrieve.zip s3://lambda-code-s3-bucket/
           aws s3 cp uncompress.zip s3://lambda-code-s3-bucket/
           aws s3 cp transform.zip s3://lambda-code-s3-bucket/
-
-      - name: Deploy Stack
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/template.json \
-            --stack-name data-pipeline-stack \
-            --capabilities CAPABILITY_NAMED_IAM
