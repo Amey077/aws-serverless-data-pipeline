@@ -27,6 +27,6 @@ jobs:
       - name: Deploy CloudFormation Stack
         run: |
           aws cloudformation deploy \
-            --template-file cloudformation/template.yaml \
+            --template-file cloudformation/template.json \
             --stack-name data-pipeline-stack \
             --capabilities CAPABILITY_NAMED_IAM
