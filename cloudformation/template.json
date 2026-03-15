@@ -4,8 +4,48 @@
     "Resources": {
         "S3Bucket": {
             "Type": "AWS::S3::Bucket",
+            "DependsOn": [
+                "UncompressLambdaPermission",
+                "TransformLambdaPermission"
+            ],
             "Properties": {
                 "BucketName": "aws-serverless-data-pipeline-s3-bucket"
+            },
+            "NotificationConfiguration": {
+            "LambdaConfigurations": [
+                {
+                "Event": "s3:ObjectCreated:*",
+                "Filter": {
+                    "S3Key": {
+                    "Rules": [
+                        {
+                        "Name": "suffix",
+                        "Value": ".zip"
+                        }
+                    ]
+                    }
+                },
+                "Function": {
+                    "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
+                }
+                },
+                {
+                "Event": "s3:ObjectCreated:*",
+                "Filter": {
+                    "S3Key": {
+                    "Rules": [
+                        {
+                        "Name": "suffix",
+                        "Value": ".csv"
+                        }
+                    ]
+                    }
+                },
+                "Function": {
+                    "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
+                }
+                }
+            ]
             }
         },
         "LambdaExecutionRole": {
@@ -33,7 +73,7 @@
         "RetrieveLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "FunctionName": "download-dataset",
+                "FunctionName": "retrieve-dataset",
                 "Handler": "retrieve.handler",
                 "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
                 "Code": {
@@ -47,6 +87,20 @@
         "TransformLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
+                "FunctionName": "transform-dataset",
+                "Handler": "transform.handler",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3Bucket" },
+                    "S3Key": "lambda/transform.zip"
+                },
+                "Runtime": "python3.9",
+                "Timeout": 300
+            }
+        },
+        "UncompressLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
                 "FunctionName": "uncompress-dataset",
                 "Handler": "uncompress.handler",
                 "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
@@ -58,18 +112,22 @@
                 "Timeout": 300
             }
         },
-        "UncompressLambdaFunction": {
-            "Type": "AWS::Lambda::Function",
+        "UncompressLambdaPermission": {
+            "Type": "AWS::Lambda::Permission",
             "Properties": {
-                "FunctionName": "transform-dataset",
-                "Handler": "transform.handler",
-                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-                "Code": {
-                    "S3Bucket": { "Ref": "S3Bucket" },
-                    "S3Key": "lambda/transform.zip"
-                },
-                "Runtime": "python3.9",
-                "Timeout": 300
+                "FunctionName": { "Ref": "UncompressLambdaFunction" },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "s3.amazonaws.com",
+                "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
+            }
+        },
+        "TransformLambdaPermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": { "Ref": "TransformLambdaFunction" },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "s3.amazonaws.com",
+                "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
             }
         }
     },
