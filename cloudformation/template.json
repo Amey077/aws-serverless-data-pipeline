@@ -123,7 +123,7 @@
         "FunctionName": { "Ref": "UncompressLambda" },
         "Action": "lambda:InvokeFunction",
         "Principal": "s3.amazonaws.com",
-        "SourceArn": { "Fn::GetAtt": ["DataBucket", "Arn"] }
+        "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
       }
     },
 
@@ -133,7 +133,7 @@
         "FunctionName": { "Ref": "TransformLambda" },
         "Action": "lambda:InvokeFunction",
         "Principal": "s3.amazonaws.com",
-        "SourceArn": { "Fn::GetAtt": ["DataBucket", "Arn"] }
+        "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
       }
     }
     },
