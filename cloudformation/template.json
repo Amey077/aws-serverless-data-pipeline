@@ -17,7 +17,6 @@
         "BucketName": "aws-serverless-data-pipeline-s3-bucket",
         "VersioningConfiguration": {
                 "Status": "Enabled"
-            }
         },
         "NotificationConfiguration": {
           "LambdaConfigurations": [
@@ -44,6 +43,7 @@
               "Function": { "Fn::GetAtt": ["TransformLambda", "Arn"] }
             }
           ]
+        }
         },
         "DependsOn": [
             "UncompressPermission",
