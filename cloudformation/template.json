@@ -1,152 +1,162 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "CloudFormation template to create an S3 bucket",
-    "Resources": {
-        "S3Bucket": {
-            "Type": "AWS::S3::Bucket",
-            "DependsOn": [
-                "UncompressLambdaPermission",
-                "TransformLambdaPermission"
-            ],
-            "Properties": {
-                "BucketName": "aws-serverless-data-pipeline-s3-bucket",
-                "VersioningConfiguration": {
-                    "Status": "Enabled"
-                }
-            }
-        },
-        "S3BucketNotification": {
-            "Type": "AWS::S3::BucketNotification",
-            "DependsOn": [
-                "UncompressLambdaPermission",
-                "TransformLambdaPermission"
-            ],
-            "Properties": {
-                "Bucket": { "Ref": "S3Bucket" },
-                "NotificationConfiguration": {
-                    "LambdaConfigurations": [
-                        {
-                        "Event": "s3:ObjectCreated:*",
-                        "Filter": {
-                            "S3Key": {
-                            "Rules": [
-                                {
-                                "Name": "suffix",
-                                "Value": ".zip"
-                                }
-                            ]
-                            }
-                        },
-                        "Function": {
-                            "Fn::GetAtt": ["UncompressLambdaFunction", "Arn"]
-                        }
-                        },
-                        {
-                        "Event": "s3:ObjectCreated:*",
-                        "Filter": {
-                            "S3Key": {
-                            "Rules": [
-                                {
-                                "Name": "suffix",
-                                "Value": ".csv"
-                                }
-                            ]
-                            }
-                        },
-                        "Function": {
-                            "Fn::GetAtt": ["TransformLambdaFunction", "Arn"]
-                        }
-                        }
-                    ]
-                }
-            }
-        },
-        "LambdaExecutionRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "RoleName": "serverless-data-pipeline-lambda-role",
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": ["lambda.amazonaws.com"]
-                            },
-                            "Action": ["sts:AssumeRole"]
-                        }
-                    ]
-                },
-                "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-                ]
-            }
-        },
-        "RetrieveLambdaFunction": {
-            "Type": "AWS::Lambda::Function",
-            "Properties": {
-                "FunctionName": "retrieve-dataset",
-                "Handler": "retrieve.handler",
-                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-                "Code": {
-                    "S3Bucket": { "Ref": "S3Bucket" },
-                    "S3Key": "lambda/retrieve.zip"
-                },
-                "Runtime": "python3.9",
-                "Timeout": 300
-            }
-        },
-        "TransformLambdaFunction": {
-            "Type": "AWS::Lambda::Function",
-            "Properties": {
-                "FunctionName": "transform-dataset",
-                "Handler": "transform.handler",
-                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-                "Code": {
-                    "S3Bucket": { "Ref": "S3Bucket" },
-                    "S3Key": "lambda/transform.zip"
-                },
-                "Runtime": "python3.9",
-                "Timeout": 300
-            }
-        },
-        "UncompressLambdaFunction": {
-            "Type": "AWS::Lambda::Function",
-            "Properties": {
-                "FunctionName": "uncompress-dataset",
-                "Handler": "uncompress.handler",
-                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-                "Code": {
-                    "S3Bucket": { "Ref": "S3Bucket" },
-                    "S3Key": "lambda/uncompress.zip"
-                },
-                "Runtime": "python3.9",
-                "Timeout": 300
-            }
-        },
-        "UncompressLambdaPermission": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-                "FunctionName": { "Ref": "UncompressLambdaFunction" },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "s3.amazonaws.com",
-                "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
-            }
-        },
-        "TransformLambdaPermission": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-                "FunctionName": { "Ref": "TransformLambdaFunction" },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "s3.amazonaws.com",
-                "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
-            }
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Serverless Data Pipeline",
+
+  "Resources": {
+
+    "CodeBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Fn::Sub": "lambda-code-s3-bucket" },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
         }
+      }
     },
-    "Outputs": {
-        "BucketName": {
-            "Value": { "Ref": "S3Bucket" }
+
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Fn::Sub": "aws-serverless-data-pipeline-s3-bucket" },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
         }
+      }
+    },
+
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        ]
+      }
+    },
+
+    "RetrieveLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "retrieve-dataset",
+        "Runtime": "python3.9",
+        "Handler": "retrieve.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "retrieve.zip"
+        }
+      }
+    },
+
+    "UncompressLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "uncompress-dataset",
+        "Runtime": "python3.9",
+        "Handler": "uncompress.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "uncompress.zip"
+        }
+      }
+    },
+
+    "TransformLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "transform-dataset",
+        "Runtime": "python3.9",
+        "Handler": "transform.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 300,
+        "Code": {
+          "S3Bucket": { "Ref": "CodeBucket" },
+          "S3Key": "transform.zip"
+        }
+      }
+    },
+
+    "UncompressPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "UncompressLambda" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "s3.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
+      }
+    },
+
+    "TransformPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "TransformLambda" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "s3.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
+      }
+    },
+
+    "BucketNotification": {
+      "Type": "AWS::S3::BucketNotification",
+      "DependsOn": [
+        "UncompressPermission",
+        "TransformPermission"
+      ],
+      "Properties": {
+        "Bucket": { "Ref": "S3Bucket" },
+        "NotificationConfiguration": {
+          "LambdaConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "suffix",
+                      "Value": ".zip"
+                    }
+                  ]
+                }
+              },
+              "Function": {
+                "Fn::GetAtt": ["UncompressLambda", "Arn"]
+              }
+            },
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "suffix",
+                      "Value": ".csv"
+                    }
+                  ]
+                }
+              },
+              "Function": {
+                "Fn::GetAtt": ["TransformLambda", "Arn"]
+              }
+            }
+          ]
+        }
+      }
     }
+
+  }
 }

@@ -1,4 +1,4 @@
-name: Delete CloudFormation Stack
+name: Delete Infrastructure
 
 on:
   workflow_dispatch:
@@ -12,23 +12,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
-      - name: Delete CloudFormation Stack
+      - name: Empty Buckets
+        run: |
+          aws s3 rm s3://lambda-code-s3-bucket --recursive || true
+          aws s3 rm s3://aws-serverless-data-pipeline-s3-bucket --recursive || true
+
+      - name: Delete Stack
         run: |
           aws cloudformation delete-stack \
-            --stack-name data-pipeline-stack \
-            --region us-east-1
-
-      - name: Wait for deletion
-        run: |
-          aws cloudformation wait stack-delete-complete \
-            --stack-name data-pipeline-stack \
-            --region us-east-1
+            --stack-name data-pipeline-stack

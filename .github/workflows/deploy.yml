@@ -1,4 +1,4 @@
-name: Deploy Infrastructure
+name: Deploy
 
 on:
   push:
@@ -15,35 +15,28 @@ jobs:
 
     steps:
 
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
-      - name: Zip Lambda Functions
+      - name: Zip Lambda Code
         run: |
-          cd lambda/retrieve
-          zip -r ../../retrieve.zip .
-          cd ../uncompress
-          zip -r ../../uncompress.zip .
-          cd ../transform
-          zip -r ../../transform.zip .
-          cd ../../
+          zip -r retrieve.zip lambda/retrieve
+          zip -r uncompress.zip lambda/uncompress
+          zip -r transform.zip lambda/transform
 
-      - name: Upload Lambda Zips to S3
+      - name: Upload Lambda Packages
         run: |
-          aws s3 cp retrieve.zip s3://aws-serverless-data-pipeline-s3-bucket/lambda/retrieve.zip
-          aws s3 cp uncompress.zip s3://aws-serverless-data-pipeline-s3-bucket/lambda/uncompress.zip
-          aws s3 cp transform.zip s3://aws-serverless-data-pipeline-s3-bucket/lambda/transform.zip
+          aws s3 cp retrieve.zip s3://lambda-code-s3-bucket/
+          aws s3 cp uncompress.zip s3://lambda-code-s3-bucket/
+          aws s3 cp transform.zip s3://lambda-code-s3-bucket/
 
-      - name: Deploy CloudFormation
+      - name: Deploy Stack
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/template.json \
             --stack-name data-pipeline-stack \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-1
+            --capabilities CAPABILITY_NAMED_IAM
