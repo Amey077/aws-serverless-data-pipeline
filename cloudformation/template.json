@@ -15,15 +15,46 @@
     },
 
     "S3Bucket": {
-      "Type": "AWS::S3::Bucket",
-      "Properties": {
-        "BucketName": { "Fn::Sub": "aws-serverless-data-pipeline-s3-bucket" },
+    "Type": "AWS::S3::Bucket",
+    "Properties": {
+        "BucketName": "aws-serverless-data-pipeline-s3-bucket",
         "VersioningConfiguration": {
-          "Status": "Enabled"
+        "Status": "Enabled"
+        },
+        "NotificationConfiguration": {
+            "LambdaConfigurations": [
+                {
+                "Event": "s3:ObjectCreated:*",
+                "Filter": {
+                    "S3Key": {
+                    "Rules": [
+                        {
+                        "Name": "suffix",
+                        "Value": ".zip"
+                        }
+                    ]
+                    }
+                },
+                "Function": { "Fn::GetAtt": ["UncompressLambda", "Arn"] }
+                },
+                {
+                "Event": "s3:ObjectCreated:*",
+                "Filter": {
+                    "S3Key": {
+                    "Rules": [
+                        {
+                        "Name": "suffix",
+                        "Value": ".csv"
+                        }
+                    ]
+                    }
+                },
+                "Function": { "Fn::GetAtt": ["TransformLambda", "Arn"] }
+                }
+            ]
+            }
         }
-      }
     },
-
     "LambdaExecutionRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -90,7 +121,6 @@
         }
       }
     },
-
     "UncompressPermission": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -100,7 +130,6 @@
         "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
       }
     },
-
     "TransformPermission": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -109,54 +138,6 @@
         "Principal": "s3.amazonaws.com",
         "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
       }
-    },
-
-    "BucketNotification": {
-      "Type": "AWS::S3::BucketNotification",
-      "DependsOn": [
-        "UncompressPermission",
-        "TransformPermission"
-      ],
-      "Properties": {
-        "Bucket": { "Ref": "S3Bucket" },
-        "NotificationConfiguration": {
-          "LambdaConfigurations": [
-            {
-              "Event": "s3:ObjectCreated:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "suffix",
-                      "Value": ".zip"
-                    }
-                  ]
-                }
-              },
-              "Function": {
-                "Fn::GetAtt": ["UncompressLambda", "Arn"]
-              }
-            },
-            {
-              "Event": "s3:ObjectCreated:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "suffix",
-                      "Value": ".csv"
-                    }
-                  ]
-                }
-              },
-              "Function": {
-                "Fn::GetAtt": ["TransformLambda", "Arn"]
-              }
-            }
-          ]
-        }
-      }
     }
-
   }
 }
