@@ -7,6 +7,70 @@
             "Properties": {
                 "BucketName": "aws-serverless-data-pipeline-s3-bucket"
             }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "serverless-data-pipeline-lambda-role",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": ["lambda.amazonaws.com"]
+                            },
+                            "Action": ["sts:AssumeRole"]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+                ]
+            }
+        },
+        "RetrieveLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "download-dataset",
+                "Handler": "retrieve.handler",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3Bucket" },
+                    "S3Key": "lambda/retrieve.zip"
+                },
+                "Runtime": "python3.9",
+                "Timeout": 300
+            }
+        },
+        "TransformLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "uncompress-dataset",
+                "Handler": "uncompress.handler",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3Bucket" },
+                    "S3Key": "lambda/uncompress.zip"
+                },
+                "Runtime": "python3.9",
+                "Timeout": 300
+            }
+        },
+        "UncompressLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "transform-dataset",
+                "Handler": "transform.handler",
+                "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3Bucket" },
+                    "S3Key": "lambda/transform.zip"
+                },
+                "Runtime": "python3.9",
+                "Timeout": 300
+            }
         }
     },
     "Outputs": {
