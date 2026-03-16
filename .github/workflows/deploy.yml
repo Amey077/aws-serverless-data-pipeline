@@ -41,6 +41,10 @@ jobs:
             --stack-name data-pipeline-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --region us-east-1
+            --parameter-overrides \
+              RetrieveLambdaKey=lambda/retrieve-${{ github.sha }}.zip \
+              UncompressLambdaKey=lambda/uncompress-${{ github.sha }}.zip \
+              TransformLambdaKey=lambda/transform-${{ github.sha }}.zip
 
       - name: Upload Lambda Zip to S3
         run: |
