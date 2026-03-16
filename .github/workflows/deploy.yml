@@ -40,7 +40,7 @@ jobs:
             --template-file cloudformation/template.json \
             --stack-name data-pipeline-stack \
             --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-1
+            --region us-east-1 \
             --parameter-overrides \
               RetrieveLambdaKey=lambda/retrieve-${{ github.sha }}.zip \
               UncompressLambdaKey=lambda/uncompress-${{ github.sha }}.zip \
