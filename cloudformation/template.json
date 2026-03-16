@@ -50,7 +50,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
+            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
             "S3Key": "lambda/retrieve.zip"
             }
         }
@@ -64,7 +64,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
+            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
             "S3Key": "lambda/uncompress.zip"
             }
         }
@@ -78,7 +78,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
+            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
             "S3Key": "lambda/transform.zip"
             }
         }
