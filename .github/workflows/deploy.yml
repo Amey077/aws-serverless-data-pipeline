@@ -34,12 +34,16 @@ jobs:
           zip -r ../../transform.zip .
           cd ../../
 
+      - name: Create S3 Bucket for Lambda Code
+        run: |
+          aws s3 mb s3://lambda-data-pipeline-code-s3-bucket --region us-east-1 || true
+
       - name: Upload Lambda Zip to S3
         run: |
           aws s3 cp retrieve.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/retrieve-${{ github.sha }}.zip
           aws s3 cp uncompress.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/uncompress-${{ github.sha }}.zip
           aws s3 cp transform.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/transform-${{ github.sha }}.zip
-          
+
       - name: Deploy CloudFormation
         run: |
           aws cloudformation deploy \
@@ -51,4 +55,5 @@ jobs:
               RetrieveLambdaKey=lambda/retrieve-${{ github.sha }}.zip \
               UncompressLambdaKey=lambda/uncompress-${{ github.sha }}.zip \
               TransformLambdaKey=lambda/transform-${{ github.sha }}.zip
-     
+
+      
