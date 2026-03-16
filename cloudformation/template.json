@@ -1,6 +1,17 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Serverless Data Pipeline",
+  "Parameters": {
+    "RetrieveLambdaKey": {
+        "Type": "String"
+    },
+    "UncompressLambdaKey": {
+        "Type": "String"
+    },
+    "TransformLambdaKey": {
+        "Type": "String"
+    }
+  },
   "Resources": {
     "CodeBucket": {
         "Type": "AWS::S3::Bucket",
@@ -51,7 +62,7 @@
             "Timeout": 300,
             "Code": {
             "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/retrieve.zip"
+            "S3Key": { "Ref": "RetrieveLambdaKey" }
             }
         }
     },
@@ -65,7 +76,7 @@
             "Timeout": 300,
             "Code": {
             "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/uncompress.zip"
+            "S3Key": { "Ref": "UncompressLambdaKey" }
             }
         }
     },
@@ -73,13 +84,14 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
             "FunctionName": "transform-dataset",
+            "MemorySize": 1024,
             "Runtime": "python3.9",
             "Handler": "transform.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
             "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/transform.zip"
+            "S3Key": { "Ref": "TransformLambdaKey" }
             }
         }
     },

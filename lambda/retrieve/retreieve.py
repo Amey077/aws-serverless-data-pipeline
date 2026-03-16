@@ -9,7 +9,6 @@ DATA_URL = "https://eforexcel.com/wp/wp-content/uploads/2020/09/2m-Sales-Records
 BUCKET = "aws-serverless-data-pipeline-s3-bucket"
 KEY = "raw_data/sales_records.zip"
 
-
 def handler(event, context):
 
     print(f"Downloading dataset from {DATA_URL}")
