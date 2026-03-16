@@ -50,7 +50,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
+            "S3Bucket": { "Ref": "CodeBucket" },
             "S3Key": "lambda/retrieve.zip"
             }
         }
@@ -64,7 +64,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
+            "S3Bucket": { "Ref": "CodeBucket" },
             "S3Key": "lambda/uncompress.zip"
             }
         }
@@ -78,7 +78,7 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": "lambda-data-pipeline-code-s3-bucket",
+            "S3Bucket": { "Ref": "CodeBucket" },
             "S3Key": "lambda/transform.zip"
             }
         }
@@ -112,7 +112,6 @@
     },
     "AWSTable": {
     "Type": "AWS::Glue::Table",
-    "DependsOn": "GlueDatabase",
     "Properties": {
         "DatabaseName": "aws_data_pipeline_db",
         "CatalogId": { "Ref": "AWS::AccountId" },
@@ -125,6 +124,7 @@
             "StorageDescriptor": {
                 "Columns": [
                 { "Name": "region", "Type": "string" },
+                { "Name": "country", "Type": "string" },
                 { "Name": "item_type", "Type": "string" },
                 { "Name": "sales_channel", "Type": "string" },
                 { "Name": "order_priority", "Type": "string" },
