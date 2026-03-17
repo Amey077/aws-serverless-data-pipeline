@@ -23,6 +23,11 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
+      
+      - name: Get AWS Account ID
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
 
       - name: Deploy first CloudFormation
         run: |
@@ -30,23 +35,24 @@ jobs:
             --template-file cloudformation/template.json \
             --stack-name aws-serverless-data-pipeline-s3 \
             --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-1
+            --region us-east-1 \
+            --no-fail-on-empty-changeset
 
       - name: Zip Lambda Functions
         run: |
-          cd lambda/retrieve
+          cd lambda/retrieve || exit 1
           zip -r ../../retrieve.zip .
-          cd ../uncompress
+          cd ../uncompress || exit 1
           zip -r ../../uncompress.zip .
-          cd ../transform
+          cd ../transform || exit 1
           zip -r ../../transform.zip .
           cd ../../
 
       - name: Upload Lambda Zip to S3
         run: |
-          aws s3 cp retrieve.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/retrieve.zip
-          aws s3 cp uncompress.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/uncompress.zip
-          aws s3 cp transform.zip s3://lambda-data-pipeline-code-s3-bucket/lambda/transform.zip
+          aws s3 cp retrieve.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/retrieve.zip
+          aws s3 cp uncompress.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/uncompress.zip
+          aws s3 cp transform.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/transform.zip
 
       - name: Deploy second CloudFormation
         run: |
@@ -54,4 +60,5 @@ jobs:
             --template-file cloudformation/template_2.json \
             --stack-name aws-serverless-data-pipeline-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
-            --region us-east-1
+            --region us-east-1 \
+            --no-fail-on-empty-changeset

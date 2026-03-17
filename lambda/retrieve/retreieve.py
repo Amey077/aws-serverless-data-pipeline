@@ -6,7 +6,7 @@ s3 = boto3.client("s3")
 
 DATA_URL = "https://eforexcel.com/wp/wp-content/uploads/2020/09/2m-Sales-Records.zip"
 
-BUCKET = "aws-serverless-data-pipeline-s3-bucket"
+BUCKET = "${AWS::AccountId}-aws-serverless-data-pipeline-s3-bucket"
 KEY = "raw_data/sales_records.zip"
 
 def handler(event, context):

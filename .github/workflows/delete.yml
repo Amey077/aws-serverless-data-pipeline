@@ -20,17 +20,27 @@ jobs:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
-      - name: Delete Stack2
+      - name: Get AWS Account ID
         run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+
+      - name: Delete Lambda Stack
+        run: |          
           aws cloudformation delete-stack \
+            --stack-name aws-serverless-data-pipeline-lambda
+
+          aws cloudformation wait stack-delete-complete \
             --stack-name aws-serverless-data-pipeline-lambda
 
       - name: Empty Buckets
         run: |
-          aws s3 rm s3://lambda-data-pipeline-code-s3-bucket --recursive || true
-          aws s3 rm s3://aws-serverless-data-pipeline-s3-bucket --recursive || true
+          aws s3 rm s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket --recursive || true
 
-      - name: Delete Stack
+      - name: Delete Stack1
         run: |
           aws cloudformation delete-stack \
-            --stack-name aws-serverless-data-pipeline-s3      
+            --stack-name aws-serverless-data-pipeline-s3 
+            
+          aws cloudformation wait stack-delete-complete \
+            --stack-name aws-serverless-data-pipeline-s3

@@ -6,62 +6,116 @@
     "Type": "AWS::IAM::Role",
     "Properties": {
         "AssumeRolePolicyDocument": {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "lambda.amazonaws.com"
-            },
-            "Action": "sts:AssumeRole"
-            }
-        ]
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+                }
+            ]
         },
+        "Policies": [
+            {
+                "PolicyName": "S3AccessPolicy",
+                "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "s3:GetObject",
+                            "s3:PutObject",
+                            "s3:DeleteObject"
+                        ],
+                        "Resource": {
+                            "Fn::Sub": [
+                                "arn:aws:s3:::${S3Bucket}/*",
+                                {
+                                    "S3Bucket": { "Fn::ImportValue": "S3BucketName" }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "s3:ListBucket"
+                        ],
+                        "Resource": {
+                            "Fn::Sub": [
+                                "arn:aws:s3:::${S3Bucket}",
+                                {
+                                    "S3Bucket": { "Fn::ImportValue": "S3BucketName" }
+                                }
+                            ]
+                        }
+                    }
+                ]
+                }
+            }
+        ],
         "ManagedPolicyArns": [
-            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-            "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
             ]
         }
     },
     "RetrieveLambda": {
         "Type": "AWS::Lambda::Function",
         "Properties": {
-            "FunctionName": "retrieve-dataset",
+            "FunctionName": "retrieve-data",
             "Runtime": "python3.9",
             "Handler": "retrieve.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/retrieve.zip"
+                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
+                "S3Key": "lambda/retrieve.zip"
+            },
+            "Environment": {
+                "Variables": {
+                    "BUCKET_NAME": { "Fn::ImportValue": "S3BucketName" }
+                }
             }
         }
     },
     "UncompressLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-            "FunctionName": "uncompress-dataset",
+            "FunctionName": "uncompress-data",
             "Runtime": "python3.9",
             "Handler": "uncompress.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/uncompress.zip"
+                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
+                "S3Key": "lambda/uncompress.zip"
+            },
+            "Environment": {
+                "Variables": {
+                    "BUCKET_NAME": { "Fn::ImportValue": "S3BucketName" }
+                }
             }
         }
     },
     "TransformLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-            "FunctionName": "transform-dataset",
+            "FunctionName": "transform-data",
             "Runtime": "python3.9",
             "Handler": "transform.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "Code": {
-            "S3Bucket": { "Ref": "CodeBucket" },
-            "S3Key": "lambda/transform.zip"
+                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
+                "S3Key": "lambda/transform.zip"
+            },
+            "Environment": {
+                "Variables": {
+                    "BUCKET_NAME": { "Fn::ImportValue": "S3BucketName" }
+                }
             }
         }
     },
@@ -71,7 +125,14 @@
             "FunctionName": { "Ref": "UncompressLambda" },
             "Action": "lambda:InvokeFunction",
             "Principal": "s3.amazonaws.com",
-            "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
+            "SourceArn": {
+                "Fn::Sub": [
+                    "arn:aws:s3:::${S3Bucket}",
+                    {
+                        "S3Bucket": { "Fn::ImportValue": "S3BucketName" }
+                    }
+                ]
+            }
         }
     },
     "TransformPermission": {
@@ -80,66 +141,95 @@
             "FunctionName": { "Ref": "TransformLambda" },
             "Action": "lambda:InvokeFunction",
             "Principal": "s3.amazonaws.com",
-            "SourceArn": { "Fn::GetAtt": ["S3Bucket", "Arn"] }
+            "SourceArn": {
+                "Fn::Sub": [
+                    "arn:aws:s3:::${S3Bucket}",
+                    {
+                        "S3Bucket": { "Fn::ImportValue": "S3BucketName" }
+                    }
+                ]
+            }
         }
     },
     "GlueTable": {
-      "Type": "AWS::Glue::Table",
-      "DependsOn": "GlueDatabase",
-      "Properties": {
-        "DatabaseName": "aws_data_pipeline_db",
-        "CatalogId": { "Ref": "AWS::AccountId" },
-        "TableInput": {
-          "Name": "aws_data_table",
-          "TableType": "EXTERNAL_TABLE",
-          "Parameters": {
-            "classification": "parquet"
-          },
-          "StorageDescriptor": {
-            "Columns": [
-              { "Name": "region", "Type": "string" },
-              { "Name": "item_type", "Type": "string" },
-              { "Name": "sales_channel", "Type": "string" },
-              { "Name": "order_priority", "Type": "string" },
-              { "Name": "order_date", "Type": "date" },
-              { "Name": "order_id", "Type": "int" },
-              { "Name": "ship_date", "Type": "date" },
-              { "Name": "units_sold", "Type": "int" },
-              { "Name": "unit_price", "Type": "double" },
-              { "Name": "unit_cost", "Type": "double" },
-              { "Name": "total_revenue", "Type": "double" },
-              { "Name": "total_cost", "Type": "double" },
-              { "Name": "total_profit", "Type": "double" }
-            ],
-            "Location": {
-              "Fn::Sub": "s3://${DataBucket}/processed_data/"
+        "Type": "AWS::Glue::Table",
+        "Properties": {
+            "DatabaseName": "aws_data_pipeline_db",
+            "CatalogId": { "Ref": "AWS::AccountId" },
+            "TableInput": {
+            "Name": "aws_data_table",
+            "TableType": "EXTERNAL_TABLE",
+            "Parameters": {
+                "classification": "parquet"
             },
-            "InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
-            "OutputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
-            "SerdeInfo": {
-              "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+            "StorageDescriptor": {
+                "Columns": [
+                { "Name": "region", "Type": "string" },
+                { "Name": "item_type", "Type": "string" },
+                { "Name": "sales_channel", "Type": "string" },
+                { "Name": "order_priority", "Type": "string" },
+                { "Name": "order_date", "Type": "date" },
+                { "Name": "order_id", "Type": "int" },
+                { "Name": "ship_date", "Type": "date" },
+                { "Name": "units_sold", "Type": "int" },
+                { "Name": "unit_price", "Type": "double" },
+                { "Name": "unit_cost", "Type": "double" },
+                { "Name": "total_revenue", "Type": "double" },
+                { "Name": "total_cost", "Type": "double" },
+                { "Name": "total_profit", "Type": "double" }
+                ],
+                "Location": {
+                    "Fn::Sub": [
+                        "s3://${S3Bucket}/staging/",
+                        {
+                            "S3Bucket": { "Fn::ImportValue": "S3BucketName" }
+                        }
+                    ]
+                },
+                "InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+                "OutputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
+                "SerdeInfo": {
+                "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+                }
+            },
+            "PartitionKeys": [
+                { "Name": "country", "Type": "string" }
+            ]
             }
-          },
-          "PartitionKeys": [
-            { "Name": "country", "Type": "string" }
-          ]
         }
-      }
     },
     "BucketNotification": {
         "Type": "AWS::S3::BucketNotification",
-        "DependsOn": "S3Bucket",
+        "DependsOn": [
+            "UncompressPermission",
+            "TransformPermission"
+        ],
         "Properties": {
-            "Bucket": { "Ref": "S3Bucket" },
+            "Bucket": { "Fn::ImportValue": "S3BucketName" },
             "NotificationConfiguration": {
                 "LambdaConfigurations": [
                     {
                         "Event": "s3:ObjectCreated:*",
-                        "Function": { "Ref": "UncompressLambda" }
-                    },
-                    {
+                        "Filter": {
+                            "S3Key": {
+                                "Rules": [
+                                    { "Name": "prefix", "Value": "raw_data/" },
+                                    { "Name": "suffix", "Value": ".zip" }
+                                ]
+                            }
+                        },
+                        "Function": { "Fn::GetAtt": ["UncompressLambda", "Arn"] }
+                        },
+                        {
                         "Event": "s3:ObjectCreated:*",
-                        "Function": { "Ref": "TransformLambda" }
+                        "Filter": {
+                            "S3Key": {
+                                "Rules": [
+                                    { "Name": "prefix", "Value": "staging/" }
+                                ]
+                            }
+                        },
+                        "Function": { "Fn::GetAtt": ["TransformLambda", "Arn"] }
                     }
                 ]
             }

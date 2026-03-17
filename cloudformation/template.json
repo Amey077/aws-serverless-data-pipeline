@@ -2,42 +2,43 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Serverless Data Pipeline",
   "Resources": {
-    "CodeBucket": {
+    "S3Bucket": {
         "Type": "AWS::S3::Bucket",
         "Properties": {
-            "BucketName": "lambda-data-pipeline-code-s3-bucket",
+            "BucketName": {
+                "Fn::Sub": "${AWS::AccountId}-aws-serverless-data-pipeline-s3-bucket"
+            },
             "VersioningConfiguration": {
                 "Status": "Enabled"
-            }
-        }
-    },
-    "DataBucket": {
-    "Type": "AWS::S3::Bucket",
-    "Properties": {
-        "BucketName": "aws-serverless-data-pipeline-s3-bucket",
-        "VersioningConfiguration": {
-                "Status": "Enabled"
+            },
+            "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                    {
+                        "ServerSideEncryptionByDefault": {
+                            "SSEAlgorithm": "AES256"
+                        }
+                    }
+                ]
             }
         }
     },
     "GlueDatabase": {
-    "Type": "AWS::Glue::Database",
-    "Properties": {
-        "CatalogId": { "Ref": "AWS::AccountId" },
-        "DatabaseInput": {
-        "Name": "aws_data_pipeline_db"
+        "Type": "AWS::Glue::Database",
+        "Properties": {
+            "CatalogId": { "Ref": "AWS::AccountId" },
+            "DatabaseInput": {
+                "Name": "aws_data_pipeline_db"
             }
         }
     }
   },
-    "Outputs": {
-        "CodeBucketName": {
-            "Value": { "Ref": "CodeBucket" },
-            "Description": "S3 bucket for Lambda code"
-        },
-        "DataBucketName": {
-            "Value": { "Ref": "DataBucket" },
-            "Description": "S3 bucket for data storage"
+  "Outputs": {
+    "S3BucketName": {
+        "Value": { "Ref": "S3Bucket" },
+        "Description": "S3 bucket for data and Lambda code",
+        "Export": {
+            "Name": "S3BucketName"
         }
     }
+  }
 }
