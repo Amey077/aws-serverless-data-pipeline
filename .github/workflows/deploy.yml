@@ -41,10 +41,8 @@ jobs:
 
       - name: Zip Lambda Functions
         run: |
-          pip install -r requirements.txt -t deps
-          
           cd lambda/retrieve || exit 1
-          cp -r ../../deps/* .
+          pip install requests -t . --no-cache-dir
           zip -r ../../retrieve.zip .
           cd ../../
 
@@ -53,9 +51,23 @@ jobs:
           cd ../../
           
           cd lambda/transform || exit 1
-          cp -r ../../deps/* .
           zip -r ../../transform.zip .
           cd ../../
+      
+      - name: Build Lambda Layer
+        run: |
+          rm -rf layer
+          mkdir -p layer/python
+
+          pip install pandas pyarrow -t layer/python
+
+          cd layer
+          zip -r ../layer.zip .
+          cd ..
+
+      - name: Upload Layer to S3
+        run: |
+          aws s3 cp layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/modules.zip
 
       - name: Upload Lambda Zip to S3
         run: |
