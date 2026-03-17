@@ -20,6 +20,11 @@ jobs:
           role-to-assume: arn:aws:iam::302432775392:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
+      - name: Delete Stack2
+        run: |
+          aws cloudformation delete-stack \
+            --stack-name aws-serverless-data-pipeline-lambda
+
       - name: Empty Buckets
         run: |
           aws s3 rm s3://lambda-data-pipeline-code-s3-bucket --recursive || true
@@ -28,4 +33,4 @@ jobs:
       - name: Delete Stack
         run: |
           aws cloudformation delete-stack \
-            --stack-name data-pipeline-stack
+            --stack-name aws-serverless-data-pipeline-s3      
