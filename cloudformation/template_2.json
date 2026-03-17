@@ -69,7 +69,8 @@
             "Runtime": "python3.9",
             "Handler": "retrieve.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-            "Timeout": 300,
+            "Timeout": 120,
+            "MemorySize": 512,
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/retrieve.zip"
@@ -88,7 +89,8 @@
             "Runtime": "python3.9",
             "Handler": "uncompress.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-            "Timeout": 300,
+            "Timeout": 120,
+            "MemorySize": 512,
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/uncompress.zip"
@@ -107,7 +109,8 @@
             "Runtime": "python3.9",
             "Handler": "transform.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
-            "Timeout": 300,
+            "Timeout": 120,
+            "MemorySize": 512,
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/transform.zip"

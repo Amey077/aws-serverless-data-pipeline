@@ -41,11 +41,19 @@ jobs:
 
       - name: Zip Lambda Functions
         run: |
+          pip install -r requirements.txt -t deps
+          
           cd lambda/retrieve || exit 1
+          cp -r ../../deps/* .
           zip -r ../../retrieve.zip .
-          cd ../uncompress || exit 1
+          cd ../../
+
+          cd lambda/uncompress || exit 1
           zip -r ../../uncompress.zip .
-          cd ../transform || exit 1
+          cd ../../
+          
+          cd lambda/transform || exit 1
+          cp -r ../../deps/* .
           zip -r ../../transform.zip .
           cd ../../
 
