@@ -112,7 +112,8 @@
             "Timeout": 300,
             "MemorySize": 512,
             "Layers": [
-                { "Ref": "LambdaLayer" }
+                { "Ref": "PandasLayer" },
+                { "Ref": "PyArrowLayer" }
             ],
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
@@ -157,13 +158,24 @@
             }
         }
     },
-    "LambdaLayer": {
+    "PandasLayer": {
         "Type": "AWS::Lambda::LayerVersion",
         "Properties": {
-            "LayerName": "modules-layer",
+            "LayerName": "pandas-layer",
             "Content": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
-                "S3Key": "lambda/modules.zip"
+                "S3Key": "lambda/pandas_layer.zip"
+            },
+            "CompatibleRuntimes": ["python3.9"]
+        }
+    },
+    "PyArrowLayer": {
+        "Type": "AWS::Lambda::LayerVersion",
+        "Properties": {
+            "LayerName": "pyarrow-layer",
+            "Content": {
+                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
+                "S3Key": "lambda/pyarrow_layer.zip"
             },
             "CompatibleRuntimes": ["python3.9"]
         }

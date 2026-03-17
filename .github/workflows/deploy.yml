@@ -54,21 +54,33 @@ jobs:
           zip -r ../../transform.zip .
           cd ../../
       
-      - name: Build Lambda Layer
+      - name: Build Pandas Layer
         run: |
-          rm -rf layer
-          mkdir -p layer/python
+          rm -rf layer_pandas
+          mkdir -p layer_pandas/python
 
-          pip install pandas pyarrow -t layer/python
+          pip install pandas -t layer_pandas/python
 
-          cd layer
-          zip -r ../layer.zip .
+          cd layer_pandas
+          zip -r ../pandas_layer.zip .
           cd ..
 
-      - name: Upload Layer to S3
+      - name: Build PyArrow Layer
         run: |
-          aws s3 cp layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/modules.zip
+          rm -rf layer_pyarrow
+          mkdir -p layer_pyarrow/python
 
+          pip install pyarrow -t layer_pyarrow/python
+
+          cd layer_pyarrow
+          zip -r ../pyarrow_layer.zip .
+          cd ..
+
+      - name: Upload Layers
+        run: |
+          aws s3 cp pandas_layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/pandas_layer.zip
+          aws s3 cp pyarrow_layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/pyarrow_layer.zip
+          
       - name: Upload Lambda Zip to S3
         run: |
           aws s3 cp retrieve.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/retrieve.zip
