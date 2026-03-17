@@ -51,7 +51,13 @@ jobs:
           cd ../../
           
           cd lambda/transform || exit 1
-          pip install pyarrow -t . --no-cache-dir
+          pip install pyarrow \
+            --platform manylinux2014_x86_64 \
+            --only-binary=:all: \
+            --target . \
+            --implementation cp \
+            --python-version 39 \
+            --abi cp39
           zip -r ../../transform.zip .
           cd ../../
 
