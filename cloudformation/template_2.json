@@ -167,19 +167,19 @@
             },
             "StorageDescriptor": {
                 "Columns": [
-                { "Name": "region", "Type": "string" },
-                { "Name": "item_type", "Type": "string" },
-                { "Name": "sales_channel", "Type": "string" },
-                { "Name": "order_priority", "Type": "string" },
-                { "Name": "order_date", "Type": "date" },
-                { "Name": "order_id", "Type": "int" },
-                { "Name": "ship_date", "Type": "date" },
-                { "Name": "units_sold", "Type": "int" },
-                { "Name": "unit_price", "Type": "double" },
-                { "Name": "unit_cost", "Type": "double" },
-                { "Name": "total_revenue", "Type": "double" },
-                { "Name": "total_cost", "Type": "double" },
-                { "Name": "total_profit", "Type": "double" }
+                    { "Name": "Region", "Type": "string" },
+                    { "Name": "Item Type", "Type": "string" },
+                    { "Name": "Sales Channel", "Type": "string" },
+                    { "Name": "Order Priority", "Type": "string" },
+                    { "Name": "Order Date", "Type": "date" },
+                    { "Name": "Order ID", "Type": "int" },
+                    { "Name": "Ship Date", "Type": "date" },
+                    { "Name": "Units Sold", "Type": "int" },
+                    { "Name": "Unit Price", "Type": "double" },
+                    { "Name": "Unit Cost", "Type": "double" },
+                    { "Name": "Total Revenue", "Type": "double" },
+                    { "Name": "Total Cost", "Type": "double" },
+                    { "Name": "Total Profit", "Type": "double" }
                 ],
                 "Location": {
                     "Fn::Sub": [
