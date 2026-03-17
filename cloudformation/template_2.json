@@ -111,10 +111,6 @@
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
             "MemorySize": 512,
-            "Layers": [
-                { "Ref": "PandasLayer" },
-                { "Ref": "PyArrowLayer" }
-            ],
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/transform.zip"
@@ -156,28 +152,6 @@
                     }
                 ]
             }
-        }
-    },
-    "PandasLayer": {
-        "Type": "AWS::Lambda::LayerVersion",
-        "Properties": {
-            "LayerName": "pandas-layer",
-            "Content": {
-                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
-                "S3Key": "lambda/pandas_layer.zip"
-            },
-            "CompatibleRuntimes": ["python3.9"]
-        }
-    },
-    "PyArrowLayer": {
-        "Type": "AWS::Lambda::LayerVersion",
-        "Properties": {
-            "LayerName": "pyarrow-layer",
-            "Content": {
-                "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
-                "S3Key": "lambda/pyarrow_layer.zip"
-            },
-            "CompatibleRuntimes": ["python3.9"]
         }
     },
     "GlueTable": {

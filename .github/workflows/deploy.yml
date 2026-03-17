@@ -51,36 +51,10 @@ jobs:
           cd ../../
           
           cd lambda/transform || exit 1
+          pip install pyarrow -t . --no-cache-dir
           zip -r ../../transform.zip .
           cd ../../
-      
-      - name: Build Pandas Layer
-        run: |
-          rm -rf layer_pandas
-          mkdir -p layer_pandas/python
 
-          pip install pandas -t layer_pandas/python
-
-          cd layer_pandas
-          zip -r ../pandas_layer.zip .
-          cd ..
-
-      - name: Build PyArrow Layer
-        run: |
-          rm -rf layer_pyarrow
-          mkdir -p layer_pyarrow/python
-
-          pip install pyarrow -t layer_pyarrow/python
-
-          cd layer_pyarrow
-          zip -r ../pyarrow_layer.zip .
-          cd ..
-
-      - name: Upload Layers
-        run: |
-          aws s3 cp pandas_layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/pandas_layer.zip
-          aws s3 cp pyarrow_layer.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/pyarrow_layer.zip
-          
       - name: Upload Lambda Zip to S3
         run: |
           aws s3 cp retrieve.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/retrieve.zip
