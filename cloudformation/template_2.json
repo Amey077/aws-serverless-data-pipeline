@@ -197,43 +197,6 @@
             ]
             }
         }
-    },
-    "BucketNotification": {
-        "Type": "AWS::S3::BucketNotification",
-        "DependsOn": [
-            "UncompressPermission",
-            "TransformPermission"
-        ],
-        "Properties": {
-            "Bucket": { "Fn::ImportValue": "S3BucketName" },
-            "NotificationConfiguration": {
-                "LambdaConfigurations": [
-                    {
-                        "Event": "s3:ObjectCreated:*",
-                        "Filter": {
-                            "S3Key": {
-                                "Rules": [
-                                    { "Name": "prefix", "Value": "raw_data/" },
-                                    { "Name": "suffix", "Value": ".zip" }
-                                ]
-                            }
-                        },
-                        "Function": { "Fn::GetAtt": ["UncompressLambda", "Arn"] }
-                        },
-                        {
-                        "Event": "s3:ObjectCreated:*",
-                        "Filter": {
-                            "S3Key": {
-                                "Rules": [
-                                    { "Name": "prefix", "Value": "staging/" }
-                                ]
-                            }
-                        },
-                        "Function": { "Fn::GetAtt": ["TransformLambda", "Arn"] }
-                    }
-                ]
-            }
-        }
     }
   }
 }
