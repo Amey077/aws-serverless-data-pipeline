@@ -63,3 +63,20 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --region us-east-1 \
             --no-fail-on-empty-changeset
+
+      - name: Update Lambda Code
+        run: |
+          aws lambda update-function-code \
+            --function-name retrieve-data \
+            --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
+            --s3-key lambda/retrieve.zip
+
+          aws lambda update-function-code \
+            --function-name uncompress-data \
+            --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
+            --s3-key lambda/uncompress.zip
+
+          aws lambda update-function-code \
+            --function-name transform-data \
+            --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
+            --s3-key lambda/transform.zip
