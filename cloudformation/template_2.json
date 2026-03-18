@@ -66,7 +66,7 @@
         "Type": "AWS::Lambda::Function",
         "Properties": {
             "FunctionName": "retrieve-data",
-            "Runtime": "python3.9",
+            "Runtime": "python3.11",
             "Handler": "retrieve.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
@@ -86,7 +86,7 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
             "FunctionName": "uncompress-data",
-            "Runtime": "python3.9",
+            "Runtime": "python3.11",
             "Handler": "uncompress.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
@@ -106,7 +106,7 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
             "FunctionName": "transform-data",
-            "Runtime": "python3.9",
+            "Runtime": "python3.11",
             "Handler": "transform.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
