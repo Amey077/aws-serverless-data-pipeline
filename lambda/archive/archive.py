@@ -22,7 +22,7 @@ def handler(event, context):
     
         response = s3.delete_object(
             Bucket=BUCKET_NAME,
-            Key=event['Records'][0]['s3']['object']['key'],
+            Key=f'raw_data/{CURR_DATE}/2m_sales_records.zip',
         )
         
         return {"status": "success"}

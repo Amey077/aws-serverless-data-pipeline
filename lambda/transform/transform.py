@@ -56,7 +56,7 @@ def handler(event, context):
     
     s3.put_object(
     Bucket=bucket,
-    Key=f"processed_data/{CURR_DATE}/_SUCCESS",
+    Key=f"transformed_data/{CURR_DATE}/_SUCCESS",
     Body=""
     )
 
