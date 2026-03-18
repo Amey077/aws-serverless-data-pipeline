@@ -99,6 +99,6 @@ jobs:
             --s3-key lambda/transform.zip
 
           aws lambda update-function-code \
-            --function-name archive-data \ 
+            --function-name archive-data \
             --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
             --s3-key lambda/archive.zip
