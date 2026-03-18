@@ -8,9 +8,6 @@
             "BucketName": {
                 "Fn::Sub": "${AWS::AccountId}-aws-serverless-data-pipeline-s3-bucket"
             },
-            "VersioningConfiguration": {
-                "Status": "Enabled"
-            },
             "BucketEncryption": {
                 "ServerSideEncryptionConfiguration": [
                     {

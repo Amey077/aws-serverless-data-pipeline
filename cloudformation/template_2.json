@@ -133,10 +133,7 @@
             "Handler": "archive.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
-            "MemorySize": 2048,
-            "EphemeralStorage": {
-                "Size": 2048
-            },
+            "MemorySize": 128,
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/archive.zip"
@@ -218,7 +215,7 @@
                 "InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
                 "OutputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
                 "SerdeInfo": {
-                "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+                    "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
                 }
             },
             "PartitionKeys": [

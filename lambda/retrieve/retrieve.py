@@ -6,13 +6,12 @@ import datetime
 s3 = boto3.client("s3")
 
 DATA_URL = "https://eforexcel.com/wp/wp-content/uploads/2020/09/2m-Sales-Records.zip"
-BUCKET_NAME = os.environ["BUCKET_NAME"]
 CURR_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 KEY = f"raw_data/{CURR_DATE}/2m_sales_records.zip"
 ARCHIVE_KEY = f"Archive/{CURR_DATE}/2m_sales_records.zip"
 
 def handler(event, context):
-
+    BUCKET_NAME = os.environ["BUCKET_NAME"]
     print(f"Downloading dataset from {DATA_URL}")
 
     try:

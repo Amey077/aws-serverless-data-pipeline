@@ -4,11 +4,11 @@ import datetime
 
 s3 = boto3.client("s3")
 
-BUCKET_NAME = os.environ["BUCKET_NAME"]
 CURR_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 ARCHIVE_KEY = f"Archive/{CURR_DATE}/2m_sales_records.zip"
 
 def handler(event, context):
+    BUCKET_NAME = os.environ["BUCKET_NAME"]
     try:
         print('Archiving file to S3')
         
