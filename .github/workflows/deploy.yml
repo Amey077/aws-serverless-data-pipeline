@@ -61,11 +61,16 @@ jobs:
           zip -r ../../transform.zip .
           cd ../../
 
+          cd lambda/archive || exit 1
+          zip -r ../../archive.zip .
+          cd ../../
+
       - name: Upload Lambda Zip to S3
         run: |
           aws s3 cp retrieve.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/retrieve.zip
           aws s3 cp uncompress.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/uncompress.zip
           aws s3 cp transform.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/transform.zip
+          aws s3 cp archive.zip s3://$ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket/lambda/archive.zip
 
       - name: Deploy second CloudFormation
         run: |
@@ -92,3 +97,8 @@ jobs:
             --function-name transform-data \
             --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
             --s3-key lambda/transform.zip
+
+          aws lambda update-function-code \
+            --function-name archive-data \ 
+            --s3-bucket $ACCOUNT_ID-aws-serverless-data-pipeline-s3-bucket \
+            --s3-key lambda/archive.zip

@@ -8,7 +8,8 @@ s3 = boto3.client("s3")
 DATA_URL = "https://eforexcel.com/wp/wp-content/uploads/2020/09/2m-Sales-Records.zip"
 BUCKET_NAME = os.environ["BUCKET_NAME"]
 CURR_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
-KEY = f"raw_data/{CURR_DATE}/sales_records.zip"
+KEY = f"raw_data/{CURR_DATE}/2m_sales_records.zip"
+ARCHIVE_KEY = f"Archive/{CURR_DATE}/2m_sales_records.zip"
 
 def handler(event, context):
 
@@ -24,11 +25,19 @@ def handler(event, context):
         if response.status_code != 200:
             raise Exception(f"Failed to download dataset. Status: {response.status_code}")
 
-        print("Uploading file to S3")
+        print("Uploading file to S3 Working Directory")
 
         s3.put_object(
             Bucket=BUCKET_NAME,
             Key=KEY,
+            Body=response.content
+        )
+
+        print('Archiving file to S3')
+
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=ARCHIVE_KEY,
             Body=response.content
         )
 
