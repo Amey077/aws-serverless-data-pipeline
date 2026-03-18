@@ -30,6 +30,15 @@ jobs:
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
 
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+
+      - name: Run Tests
+        run: |
+          pytest tests/
+
       - name: Deploy first CloudFormation
         run: |
           aws cloudformation deploy \
