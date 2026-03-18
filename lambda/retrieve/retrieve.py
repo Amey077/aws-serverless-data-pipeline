@@ -23,21 +23,13 @@ def handler(event, context):
         print(f"Response status code: {response.status_code}")
 
         if response.status_code != 200:
-            raise Exception(f"Failed to download dataset. Status: {response.status_code}")
+            raise Exception(f"Failed to download dataset: {response.status_code}")
 
         print("Uploading file to S3 Working Directory")
 
         s3.put_object(
             Bucket=BUCKET_NAME,
             Key=KEY,
-            Body=response.content
-        )
-
-        print('Archiving file to S3')
-
-        s3.put_object(
-            Bucket=BUCKET_NAME,
-            Key=ARCHIVE_KEY,
             Body=response.content
         )
 

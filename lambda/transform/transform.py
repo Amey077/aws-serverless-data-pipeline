@@ -4,9 +4,11 @@ import pyarrow.parquet as pq
 import pyarrow.compute as pc
 import urllib.parse
 import os
+import datetime
 
 s3 = boto3.client("s3")
 
+CURR_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 TMP_INPUT = "/tmp/input.csv"
 TMP_OUTPUT_DIR = "/tmp/output"
 
@@ -46,5 +48,11 @@ def handler(event, context):
                 Key=output_key,
                 Body=f
             )
+    
+    s3.put_object(
+    Bucket=bucket,
+    Key=f"processed_data/{CURR_DATE}/_SUCCESS",
+    Body=""
+    )
 
     return {"status": "success"}
