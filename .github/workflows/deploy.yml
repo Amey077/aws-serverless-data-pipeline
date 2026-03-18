@@ -56,7 +56,7 @@ jobs:
             --only-binary=:all: \
             --target . \
             --implementation cp \
-            --python-version 39 \
+            --python-version 311 \
             --abi cp39
           zip -r ../../transform.zip .
           cd ../../
