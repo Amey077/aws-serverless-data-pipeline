@@ -133,7 +133,7 @@
             "Handler": "archive.handler",
             "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
             "Timeout": 300,
-            "MemorySize": 128,
+            "MemorySize": 512,
             "Code": {
                 "S3Bucket": { "Fn::ImportValue": "S3BucketName" },
                 "S3Key": "lambda/archive.zip"

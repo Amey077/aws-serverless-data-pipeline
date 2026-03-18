@@ -117,19 +117,24 @@ The chain then fires automatically via S3 events:
 aws-serverless-data-pipeline/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # GitHub Actions CI/CD
+│       ├── deploy.yml          # GitHub Actions CI/CD - deploy on push to main
+│       └── delete.yml          # GitHub Actions - teardown/cleanup
 ├── cloudformation/
 │   ├── template.json           # Stack 1: S3 bucket + Glue database
 │   └── template_2.json         # Stack 2: Lambdas + IAM + Glue table
-└── lambda/
-    ├── retrieve/
-    │   └── retrieve.py         # Downloads ZIP from HTTPS
-    ├── uncompress/
-    │   └── uncompress.py       # Extracts ZIP → CSV
-    ├── archive/
-    │   └── archive.py          # Copies ZIP to Archive/, deletes original
-    └── transform/
-        └── transform.py        # CSV → Parquet partitioned by Country
+├── lambda/
+│   ├── retrieve/
+│   │   └── retrieve.py         # Downloads ZIP from HTTPS
+│   ├── uncompress/
+│   │   └── uncompress.py       # Extracts ZIP → CSV
+│   ├── archive/
+│   │   └── archive.py          # Copies ZIP to Archive/, deletes original
+│   └── transform/
+│       └── transform.py        # CSV → Parquet partitioned by Country
+├── tests/
+│   ├── test_archive.py         # Unit tests for archive Lambda
+│   └── test_retrieve.py        # Unit tests for retrieve Lambda
+└── README.md
 ```
 
 ---
