@@ -21,6 +21,11 @@ def handler(event, context):
 
     print(f"Processing: s3://{bucket}/{key}")
 
+    # Skip non-CSV files (_SUCCESS etc.)
+    if not key.endswith(".csv"):
+        print("Skipping non-CSV file")
+        return {"status": "skipped"}
+    
     s3.download_file(bucket, key, TMP_INPUT)
 
     os.makedirs(TMP_OUTPUT_DIR, exist_ok=True)
